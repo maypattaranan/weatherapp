@@ -3,6 +3,12 @@ const api = {
   base: "https://api.openweathermap.org/data/2.5/",
 };
 
+const city = document.querySelector(".app-box .city");
+const date = document.querySelector(".app-box .date");
+const temp = document.querySelector(".app-box .temp");
+const weatherEl = document.querySelector(".app-box .weather");
+const highlow = document.querySelector(".app-box .highlow");
+
 const searchBox = document.querySelector(".search-box");
 searchBox.addEventListener("keypress", setQuery);
 
@@ -13,31 +19,38 @@ function setQuery(evt) {
   }
 }
 
-function getResults(query) {
-  fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
-    .then((weather) => {
-      return weather.json();
-    })
-    .then(displayResults);
+async function getResults(query) {
+  const response = await fetch(
+    `${api.base}weather?q=${query}&units=metric&APPID=${api.key}`
+  );
+  const data = await response.json();
+  console.log("Data", data);
+
+  if (response.ok) {
+    displayResults(data);
+  } else {
+    city.textContent = `The city ${query} was not found - ${data.cod}`;
+    date.textContent = "";
+    temp.innerHTML = "";
+    weatherEl.textContent = "";
+    highlow.textContent = "";
+  }
 }
 
 function displayResults(weather) {
-  console.log(weather);
-  let city = document.querySelector(".app-box .city");
-  city.innerText = `${weather.name}, ${weather.sys.country}`;
+  console.log("displayResults - weather", weather);
+
+  city.textContent = `${weather.name}, ${weather.sys.country}`;
 
   let now = new Date();
-  let date = document.querySelector(".app-box .date");
-  date.innerText = dateBuilder(now);
 
-  let temp = document.querySelector(".app-box .temp");
+  date.textContent = dateBuilder(now);
+
   temp.innerHTML = `${Math.round(weather.main.temp)}<span>°C</span>`;
 
-  let weather_el = document.querySelector(".app-box .weather");
-  weather_el.innerText = weather.weather[0].main;
+  weatherEl.textContent = weather.weather[0].main;
 
-  let highlow = document.querySelector(".app-box .highlow");
-  highlow.innerText = `H: ${Math.round(
+  highlow.textContent = `H: ${Math.round(
     weather.main.temp_min
   )}°C / L: ${Math.round(weather.main.temp_max)}°C `;
 }
